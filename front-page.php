@@ -6,7 +6,7 @@
       <h1 class="headline headline--large">Welcome!</h1>
       <h2 class="headline headline--medium">We think you&rsquo;ll like it here.</h2>
       <h3 class="headline headline--small">Why don&rsquo;t you check out the <strong>major</strong> you&rsquo;re interested in?</h3>
-      <a href="#" class="btn btn--large btn--blue">Find Your Major</a>
+      <a href="<? echo get_post_type_archive_link( 'program' ) ?>" class="btn btn--large btn--blue">Find Your Major</a>
     </div>
   </div>
 
@@ -14,34 +14,28 @@
     <div class="full-width-split__one">
       <div class="full-width-split__inner">
         <h2 class="headline headline--small-plus t-center">Upcoming Events</h2>
-        <? 
+        <?
+          $today = date('Ymd');
           $homeEvents = new WP_Query(array(
             'posts_per_page'  => 2,
-            'post_type'       => 'event'
+            'post_type'       => 'event',
+            'meta_key'        => 'event_date',
+            'orderby'         => 'meta_value_num',
+            'order'           => 'ASC',
+            'meta_query'      => array(
+              array(
+                'key'     => 'event_date',
+                'compare' => '>=',
+                'value'   => $today,
+                'type'    => 'numeric'
+              )
+            )
           ));
 
           while($homeEvents->have_posts()) {
-            $homeEvents->the_post(); ?>
-              <div class="event-summary">
-                <a class="event-summary__date t-center" href="<? the_permalink() ?>">
-                  <span class="event-summary__month"><? 
-                    $eventDate = new DateTime(get_field('event_date'));
-                    echo $eventDate->format('M');
-                  ?></span>
-                  <span class="event-summary__day"><? echo $eventDate->format('d') ?></span>  
-                </a>
-                <div class="event-summary__content">
-                  <h5 class="event-summary__title headline headline--tiny"><a href="<? the_permalink() ?>"><? the_title() ?></a></h5>
-                  <p> <? 
-                    if (has_excerpt()){
-                      echo get_the_excerpt();
-                    } else {
-                      echo wp_trim_words( get_the_content(), 18 ); 
-                    }                    
-                    ?> <a href="<? the_permalink() ?>" class="nu gray">Learn more</a></p>
-                </div>
-              </div>
-         <? } wp_reset_postdata();  ?>  
+            $homeEvents->the_post(); 
+            get_template_part('template/content', 'event');
+          } wp_reset_postdata();  ?>  
         
         <p class="t-center no-margin"><a href="<? echo get_post_type_archive_link('event') ?>" class="btn btn--blue">View All Events</a></p>
 
