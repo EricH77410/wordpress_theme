@@ -50,6 +50,7 @@
 
     </div>
   </footer>
+
 	<?  /* pour avoir la barre wp en haut */ wp_footer(); ?>
 </body>
 </html>

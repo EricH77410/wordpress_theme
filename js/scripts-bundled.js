@@ -10340,6 +10340,8 @@ var _HeroSlider = _interopRequireDefault(__webpack_require__(4));
 
 var _GoogleMap = _interopRequireDefault(__webpack_require__(5));
 
+var _Search = _interopRequireDefault(__webpack_require__(6));
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 // 3rd party packages from NPM
@@ -10348,6 +10350,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var mobileMenu = new _MobileMenu.default();
 var heroSlider = new _HeroSlider.default();
 var googleMap = new _GoogleMap.default();
+var search = new _Search.default();
 
 /***/ }),
 /* 2 */
@@ -13580,6 +13583,145 @@ function () {
 }();
 
 var _default = GMap;
+exports.default = _default;
+
+/***/ }),
+/* 6 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _jquery = _interopRequireDefault(__webpack_require__(0));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+var Search =
+/*#__PURE__*/
+function () {
+  // 1. descrbibe and initiate our object
+  function Search() {
+    _classCallCheck(this, Search);
+
+    this.addSearchHTML();
+    this.openButton = (0, _jquery.default)('.js-search-trigger');
+    this.closeButton = (0, _jquery.default)('.search-overlay__close');
+    this.searchOverlay = (0, _jquery.default)('.search-overlay');
+    this.searchField = (0, _jquery.default)('#search-term');
+    this.isOpen = false;
+    this.typingTimer;
+    this.resultsDiv = (0, _jquery.default)('#search-overlay__result');
+    this.previousValue;
+    this.isSpinVisible = false;
+    this.events();
+  } // 2. events
+
+
+  _createClass(Search, [{
+    key: "events",
+    value: function events() {
+      this.openButton.on('click', this.openOverlay.bind(this));
+      this.closeButton.on('click', this.closeOverlay.bind(this));
+      (0, _jquery.default)(document).on('keydown', this.keyPressDispatch.bind(this));
+      this.searchField.on('keyup', this.typingLogic.bind(this));
+    } // 3. methods (function, action...)
+
+  }, {
+    key: "typingLogic",
+    value: function typingLogic() {
+      if (this.searchField.val() != this.previousValue) {
+        clearTimeout(this.typingTimer);
+
+        if (this.searchField.val()) {
+          if (!this.isSpinVisible) {
+            this.resultsDiv.html('<div class="spinner-loader"></div>');
+            this.isSpinVisible = true;
+          }
+
+          this.typingTimer = setTimeout(this.getResults.bind(this), 500);
+        } else {
+          this.resultsDiv.html('');
+          this.isSpinVisible = false;
+        }
+      }
+
+      this.previousValue = this.searchField.val();
+    }
+  }, {
+    key: "getResults",
+    value: function getResults() {
+      var _this = this;
+
+      var root = universityData.root_url;
+      var url = root + '/wp-json/wp/v2/posts?search=' + this.searchField.val();
+      var term = this.searchField.val(); // On lance plusieurs requete en meme temps
+
+      _jquery.default.when(_jquery.default.getJSON(url), _jquery.default.getJSON(root + '/wp-json/wp/v2/pages?search=' + term)).then(function (posts, pages, events) {
+        var combinedResult = posts[0].concat(pages[0]);
+
+        _this.resultsDiv.html("\n            <h2 class=\"search-overlay__section-title\">General Information</h2>\n            ".concat(combinedResult.length ? '<ul class="link-list min-list">' : '<p>No results</p>', "\n                ").concat(combinedResult.map(function (res) {
+          return "<li><a href=\"".concat(res.link, "\">").concat(res.title.rendered, "</a></li>");
+        }).join(''), "\n            ").concat(combinedResult.length ? '</ul>' : '', "\n            "));
+
+        _this.isSpinVisible = false;
+      }, function () {
+        _this.resultsDiv.html('<p>Unexpected error, please try again</p>');
+      });
+    }
+  }, {
+    key: "keyPressDispatch",
+    value: function keyPressDispatch(e) {
+      if (e.keyCode === 83 && !this.isOpen && !(0, _jquery.default)('input, textarea').is(':focus')) {
+        this.openOverlay();
+      }
+
+      if (e.keyCode === 27 && this.isOpen) {
+        this.closeOverlay();
+      }
+    }
+  }, {
+    key: "openOverlay",
+    value: function openOverlay() {
+      var _this2 = this;
+
+      this.searchOverlay.addClass('search-overlay--active');
+      (0, _jquery.default)('body').addClass('body-no-scroll'); // pour attendre que la transition css soit faite
+
+      this.searchField.val('');
+      setTimeout(function () {
+        _this2.searchField.focus();
+      }, 301);
+      this.isOpen = true;
+    }
+  }, {
+    key: "closeOverlay",
+    value: function closeOverlay() {
+      this.searchOverlay.removeClass('search-overlay--active');
+      (0, _jquery.default)('body').removeClass('body-no-scroll');
+      this.isOpen = false;
+    }
+  }, {
+    key: "addSearchHTML",
+    value: function addSearchHTML() {
+      (0, _jquery.default)('body').append("\n        <!-- Barre de recherche --> \n        <div class=\"search-overlay\">\n          <div class=\"search-overlay__top\">\n            <div class=\"container\">\n              <i class=\"fa fa-search search-overlay__icon\" aria-hidden=\"true\"></i>\n              <input type=\"text\" class=\"search-term\" placeholder=\"What are you looking for\" id=\"search-term\">\n              <i class=\"fa fa-window-close search-overlay__close\" aria-hidden=\"true\"></i>\n            </div>\n          </div>\n          <div class=\"container\">\n            <div id=\"search-overlay__result\">\n              <!-- Search result here -->\n            </div>\n          </div>\n        </div>\n        ");
+    }
+  }]);
+
+  return Search;
+}();
+
+var _default = Search;
 exports.default = _default;
 
 /***/ })
