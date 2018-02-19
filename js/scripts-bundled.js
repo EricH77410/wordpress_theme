@@ -13671,7 +13671,7 @@ function () {
         var combinedResult = posts[0].concat(pages[0]);
 
         _this.resultsDiv.html("\n            <h2 class=\"search-overlay__section-title\">General Information</h2>\n            ".concat(combinedResult.length ? '<ul class="link-list min-list">' : '<p>No results</p>', "\n                ").concat(combinedResult.map(function (res) {
-          return "<li><a href=\"".concat(res.link, "\">").concat(res.title.rendered, "</a></li>");
+          return "<li><a href=\"".concat(res.link, "\">").concat(res.title.rendered, "</a> ").concat(res.type == 'post' ? "by ".concat(res.authorName) : '', "</li>");
         }).join(''), "\n            ").concat(combinedResult.length ? '</ul>' : '', "\n            "));
 
         _this.isSpinVisible = false;
