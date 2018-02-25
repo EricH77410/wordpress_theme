@@ -16,7 +16,7 @@ while(have_posts()) {
 				</span>
 			</p>
     	</div>
-	  	<div class="generic-content"><? the_content(); ?></div>
+	  	<div class="generic-content"><? the_field('main_body_content'); ?></div>
 			
 		  <?
 

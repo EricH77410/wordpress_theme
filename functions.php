@@ -1,4 +1,7 @@
 <?
+
+require get_theme_file_path('/includes/search-route.php');
+
 // Custom fields for rest api
 function custom_rest () {
 	register_rest_field('post','authorName', array(

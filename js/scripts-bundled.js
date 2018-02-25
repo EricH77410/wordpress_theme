@@ -13664,19 +13664,23 @@ function () {
       var _this = this;
 
       var root = universityData.root_url;
-      var url = root + '/wp-json/wp/v2/posts?search=' + this.searchField.val();
-      var term = this.searchField.val(); // On lance plusieurs requete en meme temps
+      var term = this.searchField.val();
+      var url = root + '/wp-json/university/v1/search?term=' + term;
 
-      _jquery.default.when(_jquery.default.getJSON(url), _jquery.default.getJSON(root + '/wp-json/wp/v2/pages?search=' + term)).then(function (posts, pages, events) {
-        var combinedResult = posts[0].concat(pages[0]);
-
-        _this.resultsDiv.html("\n            <h2 class=\"search-overlay__section-title\">General Information</h2>\n            ".concat(combinedResult.length ? '<ul class="link-list min-list">' : '<p>No results</p>', "\n                ").concat(combinedResult.map(function (res) {
-          return "<li><a href=\"".concat(res.link, "\">").concat(res.title.rendered, "</a> ").concat(res.type == 'post' ? "by ".concat(res.authorName) : '', "</li>");
-        }).join(''), "\n            ").concat(combinedResult.length ? '</ul>' : '', "\n            "));
+      _jquery.default.get(url, function (data) {
+        _this.resultsDiv.html("\n                <div class=\"row\">\n                    <div class=\"one-third\">\n                        <h2 class=\"search-overlay__section-title\">General Informations</h2>\n                        ".concat(data.generalInfo.length ? '<ul class="link-list min-list">' : '<p>No results</p>', "\n                        ").concat(data.generalInfo.map(function (res) {
+          return "<li><a href=\"".concat(res.url, "\">").concat(res.title, "</a> ").concat(res.postType == 'post' ? "by ".concat(res.authorName) : '', "</li>");
+        }).join(''), "\n                        ").concat(data.generalInfo.length ? '</ul>' : '', "\n                    </div>\n                    <div class=\"one-third\">\n                        <h2 class=\"search-overlay__section-title\">Programs</h2>\n                        ").concat(data.programs.length ? '<ul class="link-list min-list">' : "<p>No programs match. <a href=\"".concat(root, "/programs\">View all programs</a></p>"), "\n                        ").concat(data.programs.map(function (res) {
+          return "<li><a href=\"".concat(res.url, "\">").concat(res.title, "</a> ").concat(res.postType == 'post' ? "by ".concat(res.authorName) : '', "</li>");
+        }).join(''), "\n                        ").concat(data.programs.length ? '</ul>' : '', "\n                        \n                        <h2 class=\"search-overlay__section-title\">Professors</h2>\n                        ").concat(data.professors.length ? '<ul class="professor-cards">' : "<p>No professors</p>", "\n                        ").concat(data.professors.map(function (res) {
+          return "<li class=\"professor-card__list-item\">\n                        <a class=\"professor-card\" href=\"".concat(res.url, "\">\n                            <img class=\"professor-card__image\" src=\"").concat(res.photo, "\">\n                            <span class=\"professor-card__name\">").concat(res.title, "</span>\n                        </a>\n                    </li>");
+        }).join(''), "\n                        ").concat(data.professors.length ? '</ul>' : '', "\n                    </div>\n                    <div class=\"one-third\">\n                        <h2 class=\"search-overlay__section-title\">Campuses</h2>\n                        ").concat(data.campuses.length ? '<ul class="link-list min-list">' : "<p>No Campuses match <a href=\"".concat(root, "/campuses\">View all Campuses</a></p>"), "\n                        ").concat(data.campuses.map(function (res) {
+          return "<li><a href=\"".concat(res.url, "\">").concat(res.title, "</a> ").concat(res.postType == 'post' ? "by ".concat(res.authorName) : '', "</li>");
+        }).join(''), "\n                        ").concat(data.campuses.length ? '</ul>' : '', "\n                        \n                        <h2 class=\"search-overlay__section-title\">Events</h2>\n                        ").concat(data.events.length ? '' : "<p>No Events match <a href=\"".concat(root, "/events\">View all Events</a></p>"), "\n                        ").concat(data.events.map(function (res) {
+          return "\n                        <div class=\"event-summary\">\n                        <a class=\"event-summary__date t-center\" href=\"".concat(res.url, "\">\n                            <span class=\"event-summary__month\">").concat(res.month, "</span>\n                            <span class=\"event-summary__day\">").concat(res.day, "</span>  \n                        </a>\n                        <div class=\"event-summary__content\">\n                            <h5 class=\"event-summary__title headline headline--tiny\"><a href=\"").concat(res.url, "\">").concat(res.title, "</a></h5>\n                            <p> ").concat(res.desc, "\n                             <a href=\"").concat(res.url, "\" class=\"nu gray\">Learn more</a></p>\n                        </div>\n                    </div>\n                        ");
+        }).join(''), "\n                        \n                    </div>\n                </div>\n            "));
 
         _this.isSpinVisible = false;
-      }, function () {
-        _this.resultsDiv.html('<p>Unexpected error, please try again</p>');
       });
     }
   }, {

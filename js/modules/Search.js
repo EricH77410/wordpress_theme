@@ -48,24 +48,62 @@ class Search {
 
     getResults() {
         var root = universityData.root_url;
-        var url = root+'/wp-json/wp/v2/posts?search='+this.searchField.val();
         var term = this.searchField.val();
-        // On lance plusieurs requete en meme temps
-        $.when(
-            $.getJSON(url),
-            $.getJSON(root+'/wp-json/wp/v2/pages?search='+term)
-        ).then((posts, pages, events)=>{
-            var combinedResult = posts[0].concat(pages[0]);
+        var url = root+'/wp-json/university/v1/search?term='+term;
+        
+        $.get(url, (data) => {
             this.resultsDiv.html(`
-            <h2 class="search-overlay__section-title">General Information</h2>
-            ${combinedResult.length ? '<ul class="link-list min-list">' : '<p>No results</p>'}
-                ${combinedResult.map(res => `<li><a href="${res.link}">${res.title.rendered}</a> ${res.type == 'post' ? `by ${res.authorName}`:''}</li>`).join('')}
-            ${combinedResult.length ? '</ul>' : ''}
+                <div class="row">
+                    <div class="one-third">
+                        <h2 class="search-overlay__section-title">General Informations</h2>
+                        ${data.generalInfo.length ? '<ul class="link-list min-list">' : '<p>No results</p>'}
+                        ${data.generalInfo.map(res => `<li><a href="${res.url}">${res.title}</a> ${res.postType == 'post' ? `by ${res.authorName}`:''}</li>`).join('')}
+                        ${data.generalInfo.length ? '</ul>' : ''}
+                    </div>
+                    <div class="one-third">
+                        <h2 class="search-overlay__section-title">Programs</h2>
+                        ${data.programs.length ? '<ul class="link-list min-list">' : `<p>No programs match. <a href="${root}/programs">View all programs</a></p>`}
+                        ${data.programs.map(res => `<li><a href="${res.url}">${res.title}</a> ${res.postType == 'post' ? `by ${res.authorName}`:''}</li>`).join('')}
+                        ${data.programs.length ? '</ul>' : ''}
+                        
+                        <h2 class="search-overlay__section-title">Professors</h2>
+                        ${data.professors.length ? '<ul class="professor-cards">' : `<p>No professors</p>`}
+                        ${data.professors.map(res => `<li class="professor-card__list-item">
+                        <a class="professor-card" href="${res.url}">
+                            <img class="professor-card__image" src="${res.photo}">
+                            <span class="professor-card__name">${res.title}</span>
+                        </a>
+                    </li>`).join('')}
+                        ${data.professors.length ? '</ul>' : ''}
+                    </div>
+                    <div class="one-third">
+                        <h2 class="search-overlay__section-title">Campuses</h2>
+                        ${data.campuses.length ? '<ul class="link-list min-list">' : `<p>No Campuses match <a href="${root}/campuses">View all Campuses</a></p>`}
+                        ${data.campuses.map(res => `<li><a href="${res.url}">${res.title}</a> ${res.postType == 'post' ? `by ${res.authorName}`:''}</li>`).join('')}
+                        ${data.campuses.length ? '</ul>' : ''}
+                        
+                        <h2 class="search-overlay__section-title">Events</h2>
+                        ${data.events.length ? '' : `<p>No Events match <a href="${root}/events">View all Events</a></p>`}
+                        ${data.events.map(res => `
+                        <div class="event-summary">
+                        <a class="event-summary__date t-center" href="${res.url}">
+                            <span class="event-summary__month">${res.month}</span>
+                            <span class="event-summary__day">${res.day}</span>  
+                        </a>
+                        <div class="event-summary__content">
+                            <h5 class="event-summary__title headline headline--tiny"><a href="${res.url}">${res.title}</a></h5>
+                            <p> ${res.desc}
+                             <a href="${res.url}" class="nu gray">Learn more</a></p>
+                        </div>
+                    </div>
+                        `).join('')}
+                        
+                    </div>
+                </div>
             `);
             this.isSpinVisible = false;
-        }, () => {
-            this.resultsDiv.html('<p>Unexpected error, please try again</p>');
-        });
+        })
+        
     }
 
     keyPressDispatch (e) {
