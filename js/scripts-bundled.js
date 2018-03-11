@@ -13934,7 +13934,7 @@ function () {
     value: function clickDispatch(e) {
       var currentLikeBox = (0, _jquery.default)(e.target).closest('.like-box');
 
-      if (currentLikeBox.data('exists') === 'yes') {
+      if (currentLikeBox.attr('data-exists') === 'yes') {
         this.deleteLike(currentLikeBox);
       } else {
         this.createLike(currentLikeBox);
@@ -13944,12 +13944,20 @@ function () {
     key: "createLike",
     value: function createLike(currentLikeBox) {
       _jquery.default.ajax({
+        beforeSend: function beforeSend(xhr) {
+          xhr.setRequestHeader('X-WP-Nonce', universityData.nonce);
+        },
         url: universityData.root_url + '/wp-json/like/v1/manageLike',
         type: 'POST',
         data: {
           'professorId': currentLikeBox.data('professor')
         },
         success: function success(res) {
+          currentLikeBox.attr('data-exists', 'yes');
+          var likeCount = parseInt(currentLikeBox.find('.like-count').html(), 10);
+          likeCount++;
+          currentLikeBox.find('.like-count').html(likeCount);
+          currentLikeBox.attr('data-like', res);
           console.log(res);
         },
         error: function error(err) {
@@ -13961,9 +13969,20 @@ function () {
     key: "deleteLike",
     value: function deleteLike(currentLikeBox) {
       _jquery.default.ajax({
+        beforeSend: function beforeSend(xhr) {
+          xhr.setRequestHeader('X-WP-Nonce', universityData.nonce);
+        },
         url: universityData.root_url + '/wp-json/like/v1/manageLike',
         type: 'DELETE',
+        data: {
+          'like': currentLikeBox.attr('data-like')
+        },
         success: function success(res) {
+          currentLikeBox.attr('data-exists', 'no');
+          var likeCount = parseInt(currentLikeBox.find('.like-count').html(), 10);
+          likeCount--;
+          currentLikeBox.find('.like-count').html(likeCount);
+          currentLikeBox.attr('data-like', '');
           console.log(res);
         },
         error: function error(err) {
